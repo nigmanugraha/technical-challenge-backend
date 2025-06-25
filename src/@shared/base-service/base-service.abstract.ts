@@ -17,6 +17,10 @@ interface PopulateOption {
   select?: string;
 }
 
+/**
+ * BaseService provides transactional and CRUD operations with Mongoose,
+ * supporting session-aware operations and dynamic population.
+ */
 @Injectable()
 export class BaseService<T extends Document> {
   private _mongoSession?: ClientSession;
@@ -24,21 +28,34 @@ export class BaseService<T extends Document> {
 
   constructor(private readonly model: Model<T>) {}
 
-  // Transaction Handling Methods
+  /**
+   * Set a MongoDB session manually.
+   * @param mongoSession - Optional Mongoose ClientSession.
+   * @returns The current service instance.
+   */
   public setMongoSession(mongoSession?: ClientSession) {
     this._mongoSession = mongoSession;
     this._sessionSettledManual = true;
     return this;
   }
 
+  /**
+   * Get the current MongoDB session.
+   */
   public get mongoSession() {
     return this._mongoSession;
   }
 
+  /**
+   * Check whether the session is set manually.
+   */
   public get isManual() {
     return this._sessionSettledManual;
   }
 
+  /**
+   * Start a new MongoDB session if one isn't manually set.
+   */
   protected async newMongoSession() {
     if (this._sessionSettledManual) {
       return;
@@ -46,6 +63,9 @@ export class BaseService<T extends Document> {
     this._mongoSession = await this.model.db.startSession();
   }
 
+  /**
+   * Begin a transaction using the current session, unless manually managed.
+   */
   protected startMongoTransaction() {
     if (this._sessionSettledManual) {
       return;
@@ -55,6 +75,9 @@ export class BaseService<T extends Document> {
     }
   }
 
+  /**
+   * Commit the current MongoDB transaction.
+   */
   protected async commitMongoTransaction() {
     if (this._sessionSettledManual) {
       return;
@@ -65,6 +88,9 @@ export class BaseService<T extends Document> {
     this.endMongoSession();
   }
 
+  /**
+   * Abort the current MongoDB transaction.
+   */
   protected async abortMongoTransaction() {
     if (this._sessionSettledManual) {
       return;
@@ -75,6 +101,9 @@ export class BaseService<T extends Document> {
     this.endMongoSession();
   }
 
+  /**
+   * End and clean up the current MongoDB session.
+   */
   public async endMongoSession() {
     try {
       if (this._mongoSession) {
@@ -88,18 +117,29 @@ export class BaseService<T extends Document> {
     }
   }
 
-  // expose raw model
+  /**
+   * Get the raw Mongoose model.
+   */
   get modelRaw(): Model<T> {
     return this.model;
   }
 
-  // CRUD Methods with Optional Session
+  /**
+   * Create a new document in the collection.
+   * @param createDto - Data to create the document.
+   * @returns The created document.
+   */
   async create(createDto: any): Promise<T> {
     const createdEntity = new this.model(createDto);
     return await createdEntity.save({ session: this._mongoSession });
   }
 
-  // Find all documents with optional filter, pagination, sorting, populate, and session
+  /**
+   * Find all documents with filtering, sorting, pagination, and population.
+   * @param filter - Query filter.
+   * @param options - Options for pagination, sorting, population, projection, and mapping.
+   * @returns Paginated results with total data count.
+   */
   async findAll<ResultDto>(
     filter: FilterQuery<T> = {},
     options: FindAllServiceOptions<T, ResultDto>,
@@ -152,10 +192,21 @@ export class BaseService<T extends Document> {
     return { result, total_data };
   }
 
+  /**
+   * Count documents that match a given filter.
+   * @param filter - Query filter.
+   * @returns Number of documents.
+   */
   async countDocuments(filter: FilterQuery<T> = {}): Promise<number> {
     return this.model.countDocuments(filter);
   }
 
+  /**
+   * Find a single document by filter, with optional population and projection.
+   * @param filter - Query filter.
+   * @param options - Population and projection options.
+   * @returns The matching document or null.
+   */
   async findOne(
     filter?: FilterQuery<T>,
     options?: BaseServiceQueryOptions<T>,
@@ -177,6 +228,12 @@ export class BaseService<T extends Document> {
     return await query;
   }
 
+  /**
+   * Find a single document by ID, with optional population and projection.
+   * @param id - Document ID.
+   * @param options - Population and projection options.
+   * @returns The matching document or null.
+   */
   async findById(
     id: string,
     options?: BaseServiceQueryOptions<T>,
@@ -198,6 +255,12 @@ export class BaseService<T extends Document> {
     return await query;
   }
 
+  /**
+   * Update a document matching the filter.
+   * @param filter - Query filter.
+   * @param updateDto - Fields to update.
+   * @returns The document before and after the update.
+   */
   async update(
     filter: FilterQuery<T>,
     updateDto: UpdateQuery<T>,
@@ -218,6 +281,12 @@ export class BaseService<T extends Document> {
     return { dataBefore, dataAfter };
   }
 
+  /**
+   * Update a document if it exists, otherwise create a new one.
+   * @param filter - Query filter.
+   * @param updateDto - Fields to update or create.
+   * @returns The document before and after the operation.
+   */
   async updateOrCreate(
     filter: FilterQuery<T>,
     updateDto: UpdateQuery<T>,
@@ -240,12 +309,26 @@ export class BaseService<T extends Document> {
     return { dataBefore, dataAfter };
   }
 
+  /**
+   * Delete a document matching the filter.
+   * @param filter - Query filter.
+   * @returns The deleted document, if any.
+   */
   async delete(filter: FilterQuery<T>): Promise<T | null> {
     return await this.model.findOneAndDelete(filter, {
       session: this._mongoSession,
     });
   }
 
+  /**
+   * Convert a space-separated populate string into a structured populate object array.
+   * Supports nested population using dot notation and field selection using colon.
+   *
+   * Example: 'author.name comments.user:email'
+   *
+   * @param populateStr - Populate string (e.g., "author.name comments.user:email").
+   * @returns Array of structured populate options for Mongoose.
+   */
   private convertPopulateString(populateStr: string): PopulateOption[] {
     const paths = populateStr.split(' ');
     const populateMap: Record<string, any> = {};
