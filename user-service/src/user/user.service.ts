@@ -17,6 +17,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { SendMessageDto, ViewMessagesDto } from './dto/message.dto';
 import { UserAgent } from 'src/@shared/dto/common.dto';
+import { BadRequestError } from 'src/@shared/exception/custom-error.exception';
 
 @Injectable()
 export class UserService extends BaseService<UserDocument> {
@@ -80,11 +81,20 @@ export class UserService extends BaseService<UserDocument> {
     ctx: UserAgent,
   ): Promise<CustomResponse<any>> {
     try {
+      const receiver = await this.findById(data.receiverId);
+
+      if (!receiver) {
+        throw new BadRequestError(
+          'Receiver not found. Unable to send message.',
+        );
+      }
+
       const payload = {
         content: data.content,
         senderId: `${ctx.user._id}`,
         receiverId: data.receiverId,
       };
+
       const message = await firstValueFrom(
         this.chatClient.send('chat.send.message', payload),
       );
@@ -97,6 +107,12 @@ export class UserService extends BaseService<UserDocument> {
 
   async viewMessages(data: ViewMessagesDto, ctx: UserAgent) {
     try {
+      const target = await this.findById(data.targetId);
+
+      if (!target) {
+        throw new BadRequestError('Target not found. Unable to send message.');
+      }
+
       const payload = {
         user: ctx.user._id,
         target: data.targetId,
