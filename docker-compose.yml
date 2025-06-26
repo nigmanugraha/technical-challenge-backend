@@ -1,0 +1,51 @@
+services:
+  user-service:
+    build: .
+    container_name: user-service
+    depends_on:
+      - mongodb
+      - rabbitmq
+    env_file:
+      - .env
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.dashboard-dmw.rule=Host(`test-api.nigmanugraha.my.id`)'
+      - 'traefik.http.routers.dashboard-dmw.entrypoints=websecure'
+      - 'traefik.http.routers.dashboard-dmw.tls.certresolver=myresolver'
+      - 'traefik.http.services.dashboard-dmw.loadbalancer.server.port=5000'
+    networks:
+      - traefik_default
+
+  chat-service:
+    build: ./chat-service
+    container_name: chat-service
+    depends_on:
+      - mongodb
+      - rabbitmq
+    env_file:
+      - .env
+    networks:
+      - traefik_default
+
+  mongodb:
+    image: mongo:6
+    container_name: mongo
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - traefik_default
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    networks:
+      - traefik_default
+
+networks:
+  traefik_default:
+    external: true
+
+volumes:
+  mongo_data:

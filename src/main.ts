@@ -10,14 +10,14 @@ async function bootstrap() {
   app.use(helmet());
   app.enableCors();
 
+  const RABBITMQ_URL = process.env.RABBITMQ_URL;
+  const RABBITMQ_QUEUE = process.env.RABBITMQ_QUEUE;
   // RabbitMQ microservice
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [
-        'amqps://zriteyhr:pD8imSDf_I4OSMdarhWESAszwZz4KAs1@fuji.lmq.cloudamqp.com/zriteyhr',
-      ], // atau pakai docker host
-      queue: 'user_queue',
+      urls: [RABBITMQ_URL], // atau pakai docker host
+      queue: RABBITMQ_QUEUE,
       queueOptions: { durable: false },
     },
   });
@@ -26,7 +26,7 @@ async function bootstrap() {
 
   app.useGlobalFilters(new CustomExceptionFilter());
 
-  const port = process.env.PORT ?? 3000;
+  const port = process.env.PORT ?? 4000;
   await app.listen(port);
 }
 bootstrap();

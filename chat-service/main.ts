@@ -4,15 +4,16 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  const RABBITMQ_URL = process.env.RABBITMQ_URL;
+  const RABBITMQ_QUEUE = process.env.RABBITMQ_QUEUE;
+
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,
     {
       transport: Transport.RMQ,
       options: {
-        urls: [
-          'amqps://zriteyhr:pD8imSDf_I4OSMdarhWESAszwZz4KAs1@fuji.lmq.cloudamqp.com/zriteyhr',
-        ],
-        queue: 'chat_queue',
+        urls: [RABBITMQ_URL],
+        queue: RABBITMQ_QUEUE,
         queueOptions: { durable: false },
       },
     },

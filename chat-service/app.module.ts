@@ -8,10 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MongooseModule.forRoot(process.env.DB_URI + process.env.DB_NAME, {
-      autoIndex:
-        process.env.ENV?.toLocaleLowerCase() === 'production' ? false : true,
-    }),
+    MongooseModule.forRoot(process.env.DB_URI + process.env.DB_NAME),
     ChatModule,
   ],
 })
