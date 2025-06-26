@@ -2,6 +2,8 @@
 /dist
 /node_modules
 /build
+/chat-service/dist
+/chat-service/node_modules
 
 # Logs
 logs

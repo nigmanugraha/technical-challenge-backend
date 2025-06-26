@@ -4,6 +4,7 @@ import { Message, MessageDocument } from './schema/message.schema';
 import { Model, Types } from 'mongoose';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ChatGateway } from './chat.gateway';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ChatService {
@@ -12,6 +13,7 @@ export class ChatService {
     private readonly chatGateway: ChatGateway,
   ) {}
 
+  @OnEvent('chat.markAsRead')
   async updateReadConversation(data: { senderId: string; receiverId: string }) {
     try {
       await this.messageModel.updateMany(

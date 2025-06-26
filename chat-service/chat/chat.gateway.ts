@@ -7,10 +7,12 @@ import {
 import { Server, Socket } from 'socket.io';
 import { MessageDocument } from './schema/message.schema';
 import { ChatService } from './chat.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @WebSocketGateway({ cors: true })
 export class ChatGateway {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(private readonly eventEmitter: EventEmitter2) {}
+
   @WebSocketServer() server: Server;
   private activeUsers = new Map<string, string>(); // userId → socketId
 
@@ -32,12 +34,7 @@ export class ChatGateway {
   async handleMarkAsRead(
     @MessageBody() data: { senderId: string; receiverId: string },
   ) {
-    const { senderId, receiverId } = data;
-    await this.chatService.updateReadConversation({
-      senderId,
-      receiverId,
-    });
-
+    this.eventEmitter.emit('chat.markAsRead', data);
     this.readNotification(data.senderId, data.receiverId);
   }
 
