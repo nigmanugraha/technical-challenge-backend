@@ -92,7 +92,7 @@ export class CustomExceptionFilter implements ExceptionFilter {
         meta: metaException.meta,
       });
     }
-
+    console.error(exception);
     // throw unhandled exception as internal server error
     response.status(exception.status || 500).json({
       meta: {

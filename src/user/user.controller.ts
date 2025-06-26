@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { UserGuard } from 'src/auth/guard/user.guard';
@@ -10,6 +18,11 @@ import {
   UserCreateProfileValidationSchema,
   UserUpdateProfileValidationSchema,
 } from './validations/user.validation';
+import {
+  SendMessageValidationSchema,
+  ViewMessagesValidationSchema,
+} from './validations/message.validation';
+import { SendMessageDto, ViewMessagesDto } from './dto/message.dto';
 
 @Controller('api')
 @UseGuards(UserGuard)
@@ -40,5 +53,23 @@ export class UserController {
   ) {
     const userId = `${context.user._id}`;
     return this.userService.updateProfile(body, userId);
+  }
+
+  @Post('sendMessage')
+  async sendMessage(
+    @Body(new JoiValidationPipe(SendMessageValidationSchema))
+    body: SendMessageDto,
+    @Context() ctx: UserAgent,
+  ) {
+    return this.userService.sendMessage(body, ctx);
+  }
+
+  @Get('viewMessages')
+  async viewMessages(
+    @Query(new JoiValidationPipe(ViewMessagesValidationSchema))
+    data: ViewMessagesDto,
+    @Context() ctx: UserAgent,
+  ) {
+    return this.userService.viewMessages(data, ctx);
   }
 }

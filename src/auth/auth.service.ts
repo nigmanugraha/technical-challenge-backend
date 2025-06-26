@@ -3,7 +3,7 @@ import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { UnauthorizedError } from 'src/@shared/exception/custom-error.exception';
 import { JwtAuthService } from './jwt.service';
-import { UserDocument } from 'src/user/user.schema';
+import { UserDocument } from 'src/user/schema/user.schema';
 import {
   LoginRequestDto,
   LoginResponseDto,

@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from 'src/user/user.schema';
+import { User, UserDocument } from 'src/user/schema/user.schema';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { BaseService } from 'src/@shared/base-service/base-service.abstract';
@@ -13,13 +13,19 @@ import {
 } from 'src/@shared/custom-response.provider';
 import { ProfileUserDto, UserDto } from './dto/get-user-profile.dto';
 import { getHoroscope, getZodiac } from './user.utils';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
+import { SendMessageDto, ViewMessagesDto } from './dto/message.dto';
+import { UserAgent } from 'src/@shared/dto/common.dto';
 
 @Injectable()
 export class UserService extends BaseService<UserDocument> {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @Inject('CHAT_SERVICE') private readonly chatClient: ClientProxy,
   ) {
     super(userModel);
+    this.chatClient.connect();
   }
 
   async getProfile(userId: string): Promise<CustomResponse<UserDto>> {
@@ -64,6 +70,40 @@ export class UserService extends BaseService<UserDocument> {
         },
       );
       return new UpdateDataResponse(this.mapToDto(user));
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async sendMessage(
+    data: SendMessageDto,
+    ctx: UserAgent,
+  ): Promise<CustomResponse<any>> {
+    try {
+      const payload = {
+        content: data.content,
+        sender: `${ctx.user._id}`,
+        receiver: data.receiverId,
+      };
+      const message = await firstValueFrom(
+        this.chatClient.send('chat.send.message', payload),
+      );
+      return new CreateDataResponse(message);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async viewMessages(data: ViewMessagesDto, ctx: UserAgent) {
+    try {
+      const payload = {
+        user: ctx.user._id,
+        target: data.targetId,
+      };
+      const messages = await firstValueFrom(
+        this.chatClient.send('chat.conversation', payload),
+      );
+      return new GetDataResponse(messages);
     } catch (error) {
       throw error;
     }

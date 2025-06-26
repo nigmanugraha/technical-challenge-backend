@@ -1,4 +1,4 @@
-import { UserDocument } from 'src/user/user.schema';
+import { UserDocument } from 'src/user/schema/user.schema';
 
 export class WithContext {
   ctx: UserAgent;
