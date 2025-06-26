@@ -2,11 +2,11 @@ FROM node:18
 
 WORKDIR /app
 
-COPY ./chat-service/package*.json ./
+COPY package*.json ./
 
 RUN npm install
 
-COPY . .
+COPY . ./
 
 RUN npm run build
 
