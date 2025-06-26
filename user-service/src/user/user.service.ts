@@ -51,6 +51,7 @@ export class UserService extends BaseService<UserDocument> {
           interests: interests,
         },
       );
+
       return new CreateDataResponse(this.mapToDto(user));
     } catch (error) {
       throw error;

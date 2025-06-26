@@ -15,32 +15,34 @@ describe('UserService', () => {
   let service: UserService;
   let chatClientMock: ClientProxy;
 
+  const mockUserData = {
+    _id: '685ad70a8d1f3a2322341018',
+    email: 'nigmanugraha@gmail.com',
+    username: 'nigmanugraha',
+    profile: {
+      name: 'Nigma Nugraha Sistanomega',
+      birthday: '1997-06-08T00:00:00.000Z',
+      weight: 50,
+      height: 170,
+      zodiac: 'MockZodiac',
+      horoscope: 'MockHoroscope',
+    },
+    interests: [],
+  };
+
   function MockUserModel(this: any, dto: any) {
-    Object.assign(this, dto);
+    Object.assign(this, mockUserData);
     this.save = jest.fn().mockResolvedValue({
-      _id: '1',
-      ...dto,
+      ...mockUserData,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       __v: 0,
+      toObject: jest.fn().mockReturnValue(mockUserData),
     });
+    this.toObject = jest.fn().mockReturnValue(mockUserData);
   }
 
   beforeEach(async () => {
-    const mockUserData = {
-      _id: '685ad70a8d1f3a2322341018',
-      email: 'nigmanugraha@gmail.com',
-      username: 'nigmanugraha',
-      profile: {
-        name: 'Nigma Nugraha Sistanomega',
-        birthday: '1997-06-08T00:00:00.000Z',
-        weight: 50,
-        height: 170,
-        zodiac: 'MockZodiac',
-        horoscope: 'MockHoroscope',
-      },
-      interests: [],
-    };
     const mockUserStatic = {
       find: jest.fn().mockReturnValue({
         sort: jest.fn().mockResolvedValue([mockUserData]),
@@ -51,7 +53,10 @@ describe('UserService', () => {
         session: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(mockUserData),
       }),
-      findOneAndUpdate: jest.fn().mockResolvedValue(mockUserData),
+      findOneAndUpdate: jest.fn().mockResolvedValue({
+        ...mockUserData,
+        toObject: jest.fn().mockReturnValue(mockUserData),
+      }),
     };
 
     chatClientMock = {
