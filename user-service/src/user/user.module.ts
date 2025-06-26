@@ -4,22 +4,27 @@ import { User, UserSchema } from './schema/user.schema';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: 'CHAT_SERVICE',
-        transport: Transport.RMQ,
-        options: {
-          urls: [process.env.RABBITMQ_URL],
-          queue: process.env.RABBITMQ_QUEUE,
-          queueOptions: { durable: false },
-          socketOptions: {
-            reconnectTimeInSeconds: 5,
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL')],
+            queue: configService.get<string>('RABBITMQ_QUEUE_CHAT_SERVICE'),
+            queueOptions: { durable: false },
+            socketOptions: {
+              reconnectTimeInSeconds: 5,
+            },
           },
-        },
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],

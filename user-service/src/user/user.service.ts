@@ -90,6 +90,7 @@ export class UserService extends BaseService<UserDocument> {
       );
       return new CreateDataResponse(message);
     } catch (error) {
+      console.log(error);
       throw error;
     }
   }

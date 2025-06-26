@@ -31,7 +31,11 @@ export class ChatService {
 
   async sendMessage(data: SendMessageDto) {
     try {
-      const message = new this.messageModel(data);
+      const message = new this.messageModel({
+        sender: data.senderId,
+        receiver: data.receiverId,
+        content: data.content,
+      });
       const saved = await message.save();
       this.chatGateway.sendToUser(data.senderId, data.receiverId, saved);
       return saved;

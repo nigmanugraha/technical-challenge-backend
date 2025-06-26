@@ -4,6 +4,15 @@ import helmet from 'helmet';
 import { CustomExceptionFilter } from './@shared/exception/custom-error.exception';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ UNHANDLED REJECTION:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('❌ UNCAUGHT EXCEPTION:', err);
+  process.exit(1);
+});
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -24,12 +33,11 @@ async function bootstrap() {
       },
     },
   });
-  await app.startAllMicroservices();
-  console.log('✅ RabbitMQ microservice started!');
 
   app.useGlobalFilters(new CustomExceptionFilter());
 
   const port = process.env.PORT ?? 4000;
+  await app.startAllMicroservices();
   await app.listen(port);
 }
 bootstrap();
