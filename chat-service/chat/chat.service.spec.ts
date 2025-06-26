@@ -13,7 +13,9 @@ describe('ChatService', () => {
     Object.assign(this, dto);
     this.save = jest.fn().mockResolvedValue({
       _id: '1',
-      ...dto,
+      sender: 'u1',
+      receiver: 'u2',
+      content: 'hi',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       __v: 0,
@@ -25,6 +27,7 @@ describe('ChatService', () => {
       find: jest.fn().mockReturnValue({
         sort: jest.fn().mockResolvedValue([{ _id: '1', text: 'Hello' }]),
       }),
+      updateMany: jest.fn().mockResolvedValue({ modifiedCount: 3 }),
     };
 
     chatGatewayMock = {
@@ -45,8 +48,16 @@ describe('ChatService', () => {
     service = module.get<ChatService>(ChatService);
   });
 
+  it('should update conversation mark as read', async () => {
+    const dto = { senderId: 'u1', receiverId: 'u2' };
+
+    await expect(
+      service.updateReadConversation(dto as any),
+    ).resolves.toBeUndefined();
+  });
+
   it('should send message and return it', async () => {
-    const dto = { sender: 'u1', receiver: 'u2', content: 'hi' };
+    const dto = { senderId: 'u1', receiverId: 'u2', content: 'hi' };
 
     const result = await service.sendMessage(dto as any);
 
@@ -54,8 +65,8 @@ describe('ChatService', () => {
     expect(result.sender).toBe('u1');
     expect(result.receiver).toBe('u2');
     expect(result.content).toBe('hi');
-
     expect(chatGatewayMock.sendToUser).toHaveBeenCalledWith(
+      'u1',
       'u2',
       expect.objectContaining({ content: 'hi' }),
     );

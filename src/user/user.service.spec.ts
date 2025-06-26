@@ -223,8 +223,8 @@ describe('UserService', () => {
       data: { success: true },
     };
     const expectedChatResult = {
-      sender: ctx.user._id,
-      receiver: dto.receiverId,
+      senderId: ctx.user._id,
+      receiverId: dto.receiverId,
       content: dto.content,
     };
 

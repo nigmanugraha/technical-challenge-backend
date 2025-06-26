@@ -12,11 +12,26 @@ export class ChatService {
     private readonly chatGateway: ChatGateway,
   ) {}
 
-  async sendMessage(dto: SendMessageDto) {
+  async updateReadConversation(data: { senderId: string; receiverId: string }) {
     try {
-      const message = new this.messageModel(dto);
+      await this.messageModel.updateMany(
+        {
+          sender: data.senderId,
+          receiver: data.receiverId,
+          isRead: false,
+        },
+        { isRead: true },
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async sendMessage(data: SendMessageDto) {
+    try {
+      const message = new this.messageModel(data);
       const saved = await message.save();
-      this.chatGateway.sendToUser(dto.receiver, saved);
+      this.chatGateway.sendToUser(data.senderId, data.receiverId, saved);
       return saved;
     } catch (error) {
       throw error;

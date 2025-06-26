@@ -1,8 +1,16 @@
-import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  MessageBody,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { MessageDocument } from './schema/message.schema';
+import { ChatService } from './chat.service';
 
 @WebSocketGateway({ cors: true })
 export class ChatGateway {
+  constructor(private readonly chatService: ChatService) {}
   @WebSocketServer() server: Server;
   private activeUsers = new Map<string, string>(); // userId → socketId
 
@@ -20,8 +28,30 @@ export class ChatGateway {
     }
   }
 
-  sendToUser(userId: string, message: any) {
-    const socketId = this.activeUsers.get(userId);
+  @SubscribeMessage('markAsRead')
+  async handleMarkAsRead(
+    @MessageBody() data: { senderId: string; receiverId: string },
+  ) {
+    const { senderId, receiverId } = data;
+    await this.chatService.updateReadConversation({
+      senderId,
+      receiverId,
+    });
+
+    this.readNotification(data.senderId, data.receiverId);
+  }
+
+  readNotification(senderId: string, receiverId: string) {
+    const socketId = this.activeUsers.get(receiverId);
+    const message = { senderId, receiverId };
+    if (socketId) {
+      this.server.to(socketId).emit('read_receipt', message);
+    }
+  }
+
+  sendToUser(senderId: string, receiverId: string, content: MessageDocument) {
+    const socketId = this.activeUsers.get(receiverId);
+    const message = { senderId, receiverId, content };
     if (socketId) {
       this.server.to(socketId).emit('new_message', message);
     }

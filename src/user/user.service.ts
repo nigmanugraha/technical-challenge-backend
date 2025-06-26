@@ -82,8 +82,8 @@ export class UserService extends BaseService<UserDocument> {
     try {
       const payload = {
         content: data.content,
-        sender: `${ctx.user._id}`,
-        receiver: data.receiverId,
+        senderId: `${ctx.user._id}`,
+        receiverId: data.receiverId,
       };
       const message = await firstValueFrom(
         this.chatClient.send('chat.send.message', payload),
