@@ -9,10 +9,10 @@ services:
       - .env
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.dashboard-dmw.rule=Host(`test-api.nigmanugraha.my.id`)'
-      - 'traefik.http.routers.dashboard-dmw.entrypoints=websecure'
-      - 'traefik.http.routers.dashboard-dmw.tls.certresolver=myresolver'
-      - 'traefik.http.services.dashboard-dmw.loadbalancer.server.port=5000'
+      - 'traefik.http.routers.test-api.rule=Host(`test-api.nigmanugraha.my.id`)'
+      - 'traefik.http.routers.test-api.entrypoints=websecure'
+      - 'traefik.http.routers.test-api.tls.certresolver=myresolver'
+      - 'traefik.http.services.test-api.loadbalancer.server.port=5000'
     networks:
       - traefik_default
 
