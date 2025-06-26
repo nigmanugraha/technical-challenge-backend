@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from 'src/user/schema/user.schema';
+import { User, UserDocument } from './schema/user.schema';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import { CreateUserProfileDto } from './dto/create-user-profile.dto';
 import { BaseService } from 'src/@shared/base-service/base-service.abstract';
@@ -113,10 +113,10 @@ export class UserService extends BaseService<UserDocument> {
     const birthdayStr = user?.profile?.birthday;
     const yearOfBirth = new Date(birthdayStr).getFullYear();
     const profile: ProfileUserDto = {
-      name: user.profile.name,
+      name: user?.profile?.name,
       birthday: birthdayStr,
-      weight: user.profile.weight,
-      height: user.profile.height,
+      weight: user?.profile?.weight,
+      height: user?.profile?.height,
       zodiac: birthdayStr ? getZodiac(new Date(birthdayStr)) : null,
       horoscope: birthdayStr ? getHoroscope(yearOfBirth) : null,
     };

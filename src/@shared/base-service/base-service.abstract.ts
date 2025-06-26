@@ -252,7 +252,7 @@ export class BaseService<T extends Document> {
     if (this._mongoSession) {
       query.session(this._mongoSession);
     }
-    return await query;
+    return await query.exec();
   }
 
   /**
@@ -273,10 +273,10 @@ export class BaseService<T extends Document> {
     if (!dataBefore) {
       return { dataBefore, dataAfter: null };
     }
-
-    const dataBeforeObject = dataBefore.toObject();
-    // If the document exists, apply the changes and return dataAfter as the updated document
-    const dataAfter = dataBefore ? { ...dataBeforeObject, ...updateDto } : null;
+    const dataAfter = {
+      ...(dataBefore as any),
+      ...updateDto,
+    };
 
     return { dataBefore, dataAfter };
   }
