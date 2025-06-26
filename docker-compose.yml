@@ -6,7 +6,7 @@ services:
       - mongodb
       - rabbitmq
     env_file:
-      - ./user-service/.env
+      - ./user-service/.env-cloud
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.test-api.rule=Host(`test-api.nigmanugraha.my.id`)"
@@ -23,7 +23,7 @@ services:
       - mongodb
       - rabbitmq
     env_file:
-      - ./chat-service/.env
+      - ./chat-service/.env-cloud
     networks:
       - traefik_default
 
