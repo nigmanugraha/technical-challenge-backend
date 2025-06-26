@@ -12,6 +12,7 @@ RUN npm install
 # Salin seluruh isi folder chat-service
 COPY . .
 
+COPY .env-cloud .env
 
 # Build NestJS
 RUN npm run build

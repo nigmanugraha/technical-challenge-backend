@@ -12,6 +12,7 @@ RUN npm install
 # Copy the rest of the files
 COPY . .
 
+COPY .env-cloud .env
 
 # Build project (pastikan user-service kamu di direktori src/)
 RUN npm run build
