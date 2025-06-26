@@ -18,12 +18,14 @@ import { firstValueFrom } from 'rxjs';
 import { SendMessageDto, ViewMessagesDto } from './dto/message.dto';
 import { UserAgent } from 'src/@shared/dto/common.dto';
 import { BadRequestError } from 'src/@shared/exception/custom-error.exception';
+import { FileManagerService } from 'src/FileManager/file-manager.service';
 
 @Injectable()
 export class UserService extends BaseService<UserDocument> {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @Inject('CHAT_SERVICE') private readonly chatClient: ClientProxy,
+    private readonly fileManagerService: FileManagerService,
   ) {
     super(userModel);
     this.chatClient.connect();
@@ -43,13 +45,31 @@ export class UserService extends BaseService<UserDocument> {
     userId: string,
   ): Promise<CustomResponse<UserDto>> {
     try {
-      const { interests, ...profile } = data;
+      const { interests, img, ...profile } = data;
+
+      const updateData = {
+        profile,
+        interests: interests,
+      } as any;
+
+      // Check if image file is exist
+      if (img) {
+        const metaData = {
+          'Content-Type': img.mimetype,
+        };
+
+        // upload image to s3
+        const imgUrl = await this.fileManagerService.uploadFile(
+          userId,
+          img.buffer,
+          metaData,
+        );
+        updateData.imgUrl = imgUrl; // update image url
+      }
+
       const { dataAfter: user } = await this.update(
         { _id: userId },
-        {
-          profile,
-          interests: interests,
-        },
+        updateData,
       );
 
       return new CreateDataResponse(this.mapToDto(user));
@@ -63,14 +83,32 @@ export class UserService extends BaseService<UserDocument> {
     userId: string,
   ): Promise<CustomResponse<UserDto>> {
     try {
-      const { interests, ...profile } = data;
+      const { interests, img, ...profile } = data;
+      const updateData = {
+        profile,
+        interests: interests,
+      } as any;
+
+      // Check if image file is exist
+      if (img) {
+        const metaData = {
+          'Content-Type': img.mimetype,
+        };
+
+        // upload image to s3
+        const imgUrl = await this.fileManagerService.uploadFile(
+          userId,
+          img.buffer,
+          metaData,
+        );
+        updateData.imgUrl = imgUrl; // update image url
+      }
+
       const { dataAfter: user } = await this.update(
         { _id: userId },
-        {
-          profile,
-          interests: interests,
-        },
+        updateData,
       );
+
       return new UpdateDataResponse(this.mapToDto(user));
     } catch (error) {
       throw error;
@@ -101,7 +139,6 @@ export class UserService extends BaseService<UserDocument> {
       );
       return new CreateDataResponse(message);
     } catch (error) {
-      console.log(error);
       throw error;
     }
   }
@@ -140,6 +177,7 @@ export class UserService extends BaseService<UserDocument> {
     };
     return {
       id: `${user._id}`,
+      imgUrl: user.imgUrl,
       email: user.email,
       username: user.username,
       profile: user.profile ? profile : null,

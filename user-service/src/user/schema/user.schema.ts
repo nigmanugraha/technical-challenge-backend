@@ -24,6 +24,9 @@ export class Profile {
   timestamps: true,
 })
 export class User {
+  @Prop({ default: null })
+  imgUrl: string;
+
   @Prop({ unique: true, required: true })
   email: string;
 

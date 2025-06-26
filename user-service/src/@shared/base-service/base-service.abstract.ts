@@ -273,7 +273,7 @@ export class BaseService<T extends Document> {
     if (!dataBefore) {
       return { dataBefore, dataAfter: null };
     }
-    console.log(dataBefore.toObject());
+
     const dataAfter = {
       ...dataBefore.toObject(),
       ...updateDto,

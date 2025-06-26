@@ -1,5 +1,6 @@
 export class UserDto {
   id: string;
+  imgUrl: string;
   email: string;
   username: string;
   profile: ProfileUserDto;

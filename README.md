@@ -106,6 +106,7 @@ yarn test
 - **Socket.IO** – For real-time communication
 - **Jest** – For unit testing
 - **Custom Helpers** – For OOP and code reuse
+- **File Manager** - For file upload and storage using S3
 
 ---
 
