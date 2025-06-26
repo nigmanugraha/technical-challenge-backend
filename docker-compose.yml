@@ -23,7 +23,7 @@ services:
       - mongodb
       - rabbitmq
     env_file:
-      - .env
+      - ./chat-service/.env
     networks:
       - traefik_default
 
