@@ -15,6 +15,9 @@ async function bootstrap() {
         urls: [RABBITMQ_URL],
         queue: RABBITMQ_QUEUE,
         queueOptions: { durable: false },
+        socketOptions: {
+          reconnectTimeInSeconds: 5,
+        },
       },
     },
   );

@@ -13,11 +13,12 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         name: 'CHAT_SERVICE',
         transport: Transport.RMQ,
         options: {
-          urls: [
-            'amqps://zriteyhr:pD8imSDf_I4OSMdarhWESAszwZz4KAs1@fuji.lmq.cloudamqp.com/zriteyhr',
-          ],
-          queue: 'chat_queue',
+          urls: [process.env.RABBITMQ_URL],
+          queue: process.env.RABBITMQ_QUEUE,
           queueOptions: { durable: false },
+          socketOptions: {
+            reconnectTimeInSeconds: 5,
+          },
         },
       },
     ]),

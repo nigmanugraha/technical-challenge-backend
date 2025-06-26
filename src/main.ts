@@ -19,6 +19,9 @@ async function bootstrap() {
       urls: [RABBITMQ_URL], // atau pakai docker host
       queue: RABBITMQ_QUEUE,
       queueOptions: { durable: false },
+      socketOptions: {
+        reconnectTimeInSeconds: 5,
+      },
     },
   });
   await app.startAllMicroservices();
